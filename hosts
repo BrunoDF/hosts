@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+#!-*-coding:utf-8-*-
+
+import os, sys, shutil
+
+HOSTS = "/etc/hosts"
+TMPHOSTS = "/tmp/hosts"
+
+def moveHosts():
+    try:
+        shutil.move(TMPHOSTS, HOSTS)
+    except IOError:
+        print "hosts: utilize SUDO para realizar esta ação. Somente a ação de LISTAR (-l) pode ser realizada sem permissão de superusuário."
+
+
+def addHosts(url):
+    os.system("touch /tmp/hosts")
+    if "www." in url:
+        url += " "+url[4:]
+    else:
+        url = "www."+url+" "+url
+    with open(HOSTS, "r") as f:
+        new_content = f.read() + "127.0.0.1 "+ url + "\n"
+        with open(TMPHOSTS, "w") as output:
+            output.write(new_content)
+        output.close()
+    f.close()
+    moveHosts()
+
+def removeHosts(url):
+    os.system("touch /tmp/hosts")
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        with open(TMPHOSTS, "w") as output:
+            for line in lines:
+                if url not in line:
+                    output.write(line)
+        output.close()
+    f.close()
+    moveHosts()
+
+def commentHosts(url):
+    os.system("touch /tmp/hosts")
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        with open(TMPHOSTS, "w") as output:
+            for line in lines:
+                if url in line and "#" not in line[0]:
+                    output.write("#"+line)
+                else:
+                    output.write(line)
+        output.close()
+    f.close()
+    moveHosts()
+
+def uncommentHosts(url):
+    os.system("touch /tmp/hosts")
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        with open(TMPHOSTS, "w") as output:
+            for line in lines:
+                if url in line and "#" in line[0]:
+                    output.write(line[1:])
+                else:
+                    output.write(line)
+        output.close()
+    f.close()
+    moveHosts()
+
+def listHosts():
+    with open(HOSTS, "r") as f:
+        content = f.read()
+    f.close()
+    print "==================== Hosts ===================="
+    print content
+    print "====================  End  ===================="
+    
+def main(mode, url):
+    if mode in known_modes:
+        if "-l" in mode:
+            known_modes[mode]()
+        else:
+            known_modes[mode](url)
+
+if len(sys.argv) <= 2:
+    mode = sys.argv[1]
+    url = ""
+else:
+    mode = sys.argv[1]
+    url = sys.argv[2]
+
+known_modes = {
+"-a":addHosts,
+"-r":removeHosts,
+"-c":commentHosts,
+"-u":uncommentHosts,
+"-l":listHosts
+}
+
+main(mode, url)
+
