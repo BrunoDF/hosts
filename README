@@ -1,1 +1,39 @@
-TESTE
+Hosts Management Tool
+=====================
+
+For better usage, copy the file to
+your /bin directory. (Mac And Linux)
+
+Usage
+=====
+
+Using your terminal, just type:
+
+1) For actions that make changes to hosts file:
+   
+   $ sudo hosts [param 1] [param 2]
+   
+   Where [param 1] can be:
+       
+       -a : Add to hosts
+       -r : Remove from hosts
+       -c : Comment line
+       -u : Uncomment line
+       
+   and [param 2] can be:
+   
+       Any URL that you want to manage inside hosts file.
+       The only action that needs the full URL is "add" (-a).
+       For other actions, you can just specify part of the URL.
+       
+           i.e.: $ sudo hosts -a www.myurl.com
+                 $ sudo hosts -c myurl
+                 
+       IMPORTANT: "add" (-a) actions automatically adds the URL
+                  with and without the "www." prefix, so you can
+                  keep smiling. =)
+                  Just type one of them, the app handles the rest.
+   
+2) To list the content of hosts file:
+
+   $ hosts -l
