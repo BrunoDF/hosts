@@ -77,29 +77,36 @@ def listHosts():
     f.close()
     print "==================== Hosts ===================="
     print content
-    print "====================  End  ===================="
+    print "====================  Fim  ===================="
     
 def main(mode, url):
-    exit = False
+    known_modes = {
+        "-a":addHosts,
+        "-r":removeHosts,
+        "-c":commentHosts,
+        "-u":uncommentHosts,
+        "-l":listHosts
+    }
+
+    status = None
 
     with open(HOSTS, "r") as f:
         lines = f.readlines()
         for line in lines:
             if "-a" in mode and url in line:
-                print "hosts: esta URL já existe no arquivo."
-                exit = True
+                status = "hosts: esta URL já existe no arquivo."
             elif "-c" in mode and "#" in line and url in line:
-                print "hosts: esta URL já está comentada."
-                exit = True
-            '''elif "-u" in mode and "#" not in line and url in line:
-                print "hosts: esta URL não está comentada."
-                exit = True
+                status = "hosts: esta URL já está comentada."
+            elif "-u" in mode and "#" not in line and url in line:
+                status = "hosts: esta URL não está comentada."
             elif "-r" in mode and url not in line:
-                print "hosts: esta URL não existe no arquivo."
-                exit = True'''
+                status = "hosts: esta URL não existe no arquivo."
+            else:
+                status = None
     f.close()
 
-    if exit:
+    if status:
+        print status
         sys.exit()
 
     if mode in known_modes:
@@ -107,6 +114,27 @@ def main(mode, url):
             known_modes[mode]()
         else:
             known_modes[mode](url)
+    else:
+        help = ["===================== Uso =====================",
+                "\n1) Para ações que manipulam o arquivo:",
+                "\n\t$ sudo hosts [AÇÃO] [URL ou Parte da URL]",
+                "\n\tOnde [AÇÃO] pode ser:",
+                "\n\t    '-a': Adiciona uma URL", "\t    '-r': Remove uma URL",
+                "\t    '-c': Comenta uma URL", "\t    '-u': Descomenta uma URL",
+                "\n\tO único comando que exige a URL completa é o comando '-a'.",
+                "\tOs outros comandos pode ser usados com apenas um trecho da URL:",
+                "\n\t    $ sudo hosts -a www.myurl.com",
+                "\t    $ sudo hosts -c myurl",
+                "\n\tIMPORTANTE: Ao adicionar uma URL com '-a', o programa",
+                "\t\t    automaticamente adiciona a URL com e sem 'www'.",
+                "\t\t    Apenas digite uma das duas, que o programa se",
+                "\t\t    encarrega do resto. =)",
+                "\n2) Para listar o conteúdo do arquivo:",
+                "\n\t$ hosts -l",
+                "\n===================== Fim ====================="]
+
+        for line in help:
+            print line
 
 if len(sys.argv) <= 2:
     mode = sys.argv[1]
@@ -114,14 +142,6 @@ if len(sys.argv) <= 2:
 else:
     mode = sys.argv[1]
     url = sys.argv[2]
-
-known_modes = {
-"-a":addHosts,
-"-r":removeHosts,
-"-c":commentHosts,
-"-u":uncommentHosts,
-"-l":listHosts
-}
 
 main(mode, url)
 
