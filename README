@@ -1,11 +1,16 @@
 Hosts Management Tool
-=====================
+===============================
 
-For better usage, copy the file to
-your /bin directory. (Mac And Linux)
+For better usage, copy the file to your /bin directory.
+
+Requirements
+===============================
+
+- Mac or Linux 
+- Python 2.7+
 
 Usage
-=====
+===============================
 
 Using your terminal, just type:
 
