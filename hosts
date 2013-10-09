@@ -1,3 +1,127 @@
-127.0.0.1		localhost.localdomain localhost
-::1		localhost6.localdomain6 localhost6
-127.0.0.1 www.bigxpicanha.com.br bigxpicanha.com.br
+#!/usr/bin/env python
+#!-*-coding:utf-8-*-
+
+import os, sys, shutil
+
+HOSTS = "/etc/hosts"
+TMPHOSTS = "/tmp/hosts"
+
+def createTmpFile():
+    os.system("touch "+TMPHOSTS)	
+
+def moveHosts():
+    try:
+        shutil.move(TMPHOSTS, HOSTS)
+    except IOError:
+        print "hosts: utilize SUDO para realizar esta ação. Somente a ação de LISTAR (-l) pode ser realizada sem permissão de superusuário."
+
+def addHosts(url):
+    createTmpFile()
+    if "www." in url:
+        url += " "+url[4:]
+    else:
+        url = "www."+url+" "+url
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        with open(TMPHOSTS, "w") as output:
+            for line in lines:            
+                output.write(line)
+            output.write("127.0.0.1 "+ url + "\n")
+        output.close()
+    f.close()
+    moveHosts()
+
+def removeHosts(url):
+    createTmpFile()
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        with open(TMPHOSTS, "w") as output:
+            for line in lines:
+                if url not in line:
+                    output.write(line)
+        output.close()
+    f.close()
+    moveHosts()
+
+def commentHosts(url):
+    createTmpFile()
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        with open(TMPHOSTS, "w") as output:
+            for line in lines:
+                if url in line and "#" not in line[0]:
+                    output.write("#"+line)
+                else:
+                    output.write(line)
+        output.close()
+    f.close()
+    moveHosts()
+
+def uncommentHosts(url):
+    createTmpFile()
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        with open(TMPHOSTS, "w") as output:
+            for line in lines:
+                if url in line and "#" in line[0]:
+                    output.write(line[1:])
+                else:
+                    output.write(line)
+        output.close()
+    f.close()
+    moveHosts()
+
+def listHosts():
+    with open(HOSTS, "r") as f:
+        content = f.read()
+    f.close()
+    print "==================== Hosts ===================="
+    print content
+    print "====================  End  ===================="
+    
+def main(mode, url):
+    exit = False
+
+    with open(HOSTS, "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if "-a" in mode and url in line:
+                print "hosts: esta URL já existe no arquivo."
+                exit = True
+            elif "-c" in mode and "#" in line and url in line:
+                print "hosts: esta URL já está comentada."
+                exit = True
+            '''elif "-u" in mode and "#" not in line and url in line:
+                print "hosts: esta URL não está comentada."
+                exit = True
+            elif "-r" in mode and url not in line:
+                print "hosts: esta URL não existe no arquivo."
+                exit = True'''
+    f.close()
+
+    if exit:
+        sys.exit()
+
+    if mode in known_modes:
+        if "-l" in mode:
+            known_modes[mode]()
+        else:
+            known_modes[mode](url)
+
+if len(sys.argv) <= 2:
+    mode = sys.argv[1]
+    url = ""
+else:
+    mode = sys.argv[1]
+    url = sys.argv[2]
+
+known_modes = {
+"-a":addHosts,
+"-r":removeHosts,
+"-c":commentHosts,
+"-u":uncommentHosts,
+"-l":listHosts
+}
+
+main(mode, url)
+
